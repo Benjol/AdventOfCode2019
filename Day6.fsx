@@ -25,3 +25,21 @@ let rec countorbits depth planet:int  =
     sum + depth
 
 countorbits 0 com
+
+//part B
+let rec walkup satellite acc = 
+    //printfn "%A %A" satellite acc
+    let pair = pairs |> Array.tryFind (fun (p,s) -> s = satellite) 
+    match pair with 
+    | Some(planet, s) -> walkup planet (planet :: acc)
+    | None -> acc;
+
+let you = walkup "YOU" []
+let san = walkup "SAN" []
+
+let rec counttransfers you san =
+    match you, san with
+    | h1::t1,h2::t2 when h1 = h2 -> transfers t1 t2
+    | _ -> List.length you + List.length san
+
+counttransfers you san
