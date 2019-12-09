@@ -39,7 +39,7 @@ let san = walkup "SAN" []
 
 let rec counttransfers you san =
     match you, san with
-    | h1::t1,h2::t2 when h1 = h2 -> transfers t1 t2
+    | h1::t1,h2::t2 when h1 = h2 -> counttransfers t1 t2
     | _ -> List.length you + List.length san
 
 counttransfers you san
