@@ -112,6 +112,7 @@ let run arr (io:InputOutput) =
 
 type Tile = Empty | Wall | Block | Paddle | Ball     
     with static member FromLong = function 0L -> Empty | 1L -> Wall | 2L -> Block | 3L -> Paddle | _ -> Ball
+         static member Print = function Empty -> ' ' | Wall -> '□' | Block -> 'X' | Paddle -> '_' | _ -> '●'
 type Mode = X | Y | T
 
 type Board () = 
@@ -132,3 +133,39 @@ let input = System.IO.File.ReadAllText(@"C:\Temp\ReallyTemp\Day13.txt").Split([|
 let part1 = Board()
 run input part1
 printfn "%A" (part1.BlockCount)
+
+type Board2 () =
+    let mutable map = Map.empty
+    let mutable x,y,mode = 0,0,X
+    let mutable ballx, paddlex = 0, 0
+    let withTile (x,y,t) = Map.add (x,y) t map
+    member this.BlockCount = map |> Map.filter (fun _ b -> b = Block) |> Seq.length
+    member val Score = 0L with get, set
+    member this.Print () =
+        let (mx,my) = map |> Seq.map (fun kvp -> kvp.Key) |> Seq.fold (fun (mx,my) (x,y) -> max mx x, max my y) (0,0)
+        for y in 0 .. my do
+            for x in 0 .. mx do
+                match Map.tryFind (x,y) map with
+                | Some(t) -> printf "%c" (Tile.Print t)
+                | None -> printf " "
+            printfn ""
+
+    interface InputOutput with
+        member this.Input () = this.Print(); sign (ballx - paddlex) |> int64
+        member this.Output v =
+            match mode with
+            | X -> x <- int v; mode <- Y
+            | Y -> y <- int v; mode <- T
+            | T ->
+                mode <- X
+                if (x,y) = (-1,0) then
+                    this.Score <- v
+                else
+                    let tile = Tile.FromLong v
+                    if tile = Ball then ballx <- x
+                    if tile = Paddle then paddlex <- x
+                    map <- withTile (x,y,tile)
+
+let part2 = Board2()
+run input part2
+printfn "%A" (part2.Score)
